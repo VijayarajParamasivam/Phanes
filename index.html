@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Phanes</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+  <div id="map"></div>
+  <div id="modal"></div>
+
+  <!-- Rotate to North Button -->
+  <div id="find-me-btn-container">
+  <button id="find-me-btn">Find me</button>
+  </div>
+  <button id="change-destination-btn" style="display:none;">Change Destination</button>
+
+
+  <!-- Start Button -->
+  <div id="start-btn-container">
+    <button id="start-btn" class="start-btn" style="display: none;">Start Routing</button>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.min.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
