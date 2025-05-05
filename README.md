@@ -12,7 +12,7 @@ Built to support **emergency response optimization**, Phanes reduces decision ti
   Automatically fetches hospitals within a certain optimal radius using location data.
 
 -  **Route to Hospital**  
-  Select your preferred hospital and get directions instantly.
+  Select your preferred hospital and get directions instantly or choose the nearest hospital.
 
 -  **Live Traffic Awareness**  
   Shows real-time traffic level (Low / Medium / High) with color cues.
@@ -31,7 +31,7 @@ Built to support **emergency response optimization**, Phanes reduces decision ti
 ##  Tech Stack
 
 - **Frontend**: HTML, CSS, JavaScript  
-- **Maps & Routing**: [OpenStreetMaps API]  
+- **Maps & Routing**: OpenStreetMaps API  
 - **Geolocation & Traffic**: TomTom Traffic API, Browser Geolocation
 
 ---
