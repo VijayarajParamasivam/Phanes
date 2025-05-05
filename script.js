@@ -6,26 +6,33 @@ let routingControl;
 let userMarker;
 let isRoutingStarted = false;
 let watchId = null;
-
-// Show the loading screen
-document.getElementById("loading-screen").style.display = "flex";
-document.getElementById("find-me-btn").style.display = "none";
-
-// Track if location fetch has finished
 let locationFetched = false;
 
-// Handle location fetching error
+// UI Elements
+const loadingScreen = document.getElementById("loading-screen");
+const findMeBtn = document.getElementById("find-me-btn");
+const retryPopup = document.getElementById("retry-location-popup");
+const modal = document.getElementById("modal");
+const directionBox = document.getElementById("direction-box");
+const startBtn = document.getElementById("start-btn");
+const changeDestinationBtn = document.getElementById("change-destination-btn");
+
+// Initial UI setup
+loadingScreen.style.display = "flex";
+findMeBtn.style.display = "none";
+
+// Show location fetch error popup
 function showLocationError() {
-  document.getElementById("retry-location-popup").style.display = "block";
+  retryPopup.style.display = "block";
 }
 
 // Retry location fetch
 function retryLocation() {
-  document.getElementById("retry-location-popup").style.display = "none";
+  retryPopup.style.display = "none";
   initLocationFetch();
 }
 
-// Function to initiate location fetch and map setup
+// Start location fetch
 function initLocationFetch() {
   navigator.geolocation.getCurrentPosition(
     position => {
@@ -33,43 +40,37 @@ function initLocationFetch() {
       userLat = latitude;
       userLon = longitude;
 
-      // Initialize map after getting location
-      initMap(latitude, longitude);
-
+      initMap(userLat, userLon);
       locationFetched = true;
     },
     () => {
-      // Handle location fetch failure
       locationFetched = true;
       showLocationError();
     }
   );
 }
 
-// Show the loading screen for a minimum of 2 seconds, or extend if fetching location takes longer
+// Ensure loading screen is visible for at least 2 seconds
 function hideLoadingScreen() {
-  setTimeout(function () {
+  setTimeout(function check() {
     if (locationFetched) {
-      document.getElementById("loading-screen").style.display = "none";
+      loadingScreen.style.display = "none";
     } else {
-      hideLoadingScreen(); // Keep showing loading screen until location is fetched
+      setTimeout(check, 100);
     }
-  },0);
+  }, 0);
 }
 
-// Start location fetch immediately after loading
-initLocationFetch();
-
-// Function to initialize the map
+// Initialize Leaflet map
 function initMap(lat, lon) {
   map = L.map('map', {
     zoomControl: false,
-    attributionControl: false  // Remove Leaflet logo
+    attributionControl: false
   }).setView([lat, lon], 15);
 
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
-    attribution: '' // This removes the default attribution which includes the Leaflet logo
+    attribution: ''
   }).addTo(map);
 
   const userIcon = L.icon({
@@ -81,16 +82,15 @@ function initMap(lat, lon) {
   userMarker = L.marker([lat, lon], { icon: userIcon }).addTo(map);
 
   fetchNearbyHospitals(lat, lon);
-  hideLoadingScreen();
   disableUserMarkerCreation();
-  document.getElementById("find-me-btn").style.display = "block";
+  findMeBtn.style.display = "block";
 }
 
-// Function to fetch nearby hospitals using Overpass API
+// Fetch nearby hospitals using Overpass API
 function fetchNearbyHospitals(lat, lon) {
-  const overpassUrl = `https://overpass-api.de/api/interpreter?data=[out:json];(node["amenity"="hospital"](around:2000,${lat},${lon});way["amenity"="hospital"](around:2000,${lat},${lon});relation["amenity"="hospital"](around:2000,${lat},${lon}););out center;`;
+  const url = `https://overpass-api.de/api/interpreter?data=[out:json];(node["amenity"="hospital"](around:2000,${lat},${lon});way["amenity"="hospital"](around:2000,${lat},${lon});relation["amenity"="hospital"](around:2000,${lat},${lon}););out center;`;
 
-  fetch(overpassUrl)
+  fetch(url)
     .then(res => res.json())
     .then(data => {
       hospitalList = [];
@@ -100,11 +100,10 @@ function fetchNearbyHospitals(lat, lon) {
       data.elements.forEach((el, idx) => {
         const hLat = el.lat || el.center?.lat;
         const hLon = el.lon || el.center?.lon;
-
         if (hLat && hLon) {
           const name = el.tags?.name || `Hospital ${idx + 1}`;
           const distance = getDistance(userLat, userLon, hLat, hLon);
-          const eta = (distance / 40 * 60).toFixed(0); // km/h speed
+          const eta = (distance / 40 * 60).toFixed(0); // 40 km/h
 
           hospitalList.push({ name, lat: hLat, lon: hLon, distance, eta });
 
@@ -115,42 +114,48 @@ function fetchNearbyHospitals(lat, lon) {
 
       hospitalList.sort((a, b) => a.distance - b.distance);
       showCustomPopup();
+      hideLoadingScreen();
     })
     .catch(err => {
       console.error("Error fetching hospitals:", err);
       alert("Couldn't fetch hospital data.");
+      hideLoadingScreen();
     });
 }
 
-// Function to calculate distance between two points in km
+// Calculate haversine distance in km
 function getDistance(lat1, lon1, lat2, lon2) {
   const R = 6371;
   const dLat = (lat2 - lat1) * Math.PI / 180;
   const dLon = (lon2 - lon1) * Math.PI / 180;
   const a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos(lat1 * Math.PI / 180) *
-    Math.cos(lat2 * Math.PI / 180) *
-    Math.sin(dLon / 2) * Math.sin(dLon / 2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return (R * c).toFixed(2);
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+    Math.sin(dLon / 2) ** 2;
+  return (R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))).toFixed(2);
 }
 
-// Show hospital options in a custom popup
+// Disable user interactions on map
+function disableUserMarkerCreation() {
+  map.on('click', () => false);
+  if (map.tap) map.tap.disable();
+  map.getContainer().style.cursor = "not-allowed";
+}
+
+// Show hospital options in modal
 function showCustomPopup() {
-  const modal = document.getElementById("modal");
   modal.innerHTML = `<h3>Select a Hospital</h3>`;
 
   if (hospitalList.length > 0) {
     const nearest = hospitalList[0];
-    const topBtn = document.createElement("button");
-    topBtn.className = "hospital-btn top-option";
-    topBtn.innerHTML = `<b>Route to Nearest Hospital</b>`;
-    topBtn.onclick = () => {
+    const btn = document.createElement("button");
+    btn.className = "hospital-btn top-option";
+    btn.innerHTML = `<b>Route to Nearest Hospital</b>`;
+    btn.onclick = () => {
       modal.style.display = "none";
       routeToHospital(0);
     };
-    modal.appendChild(topBtn);
+    modal.appendChild(btn);
   }
 
   hospitalList.forEach((hosp, i) => {
@@ -167,24 +172,11 @@ function showCustomPopup() {
   modal.style.display = "block";
 }
 
-// Disable user from adding markers or interacting with map
-function disableUserMarkerCreation() {
-  // Disable map click event that normally adds markers
-  map.on('click', function (e) {
-    return false; // Prevent marker creation on click
-  });
-
-  if (map.tap) map.tap.disable();
-  map.getContainer().style.cursor = "not-allowed";
-}
-
+// Start routing
 function routeToHospital(index) {
   const hosp = hospitalList[index];
 
-  if (routingControl) {
-    map.removeControl(routingControl);
-  }
-
+  if (routingControl) map.removeControl(routingControl);
   hospitalMarkers.forEach(marker => map.removeLayer(marker));
   hospitalMarkers = [];
 
@@ -199,128 +191,115 @@ function routeToHospital(index) {
     },
     createMarker: function (i, waypoint, n) {
       if (i === 0) {
-        // Source marker (ambulance)
         return L.marker(waypoint.latLng, {
           icon: L.icon({
-            iconUrl: './assets/redlocator.png', 
+            iconUrl: './assets/redlocator.png',
             iconSize: [32, 32],
             iconAnchor: [16, 32]
           })
         }).bindPopup("Ambulance Location");
       } else if (i === n - 1) {
-        // Destination marker (hospital) – default icon
         return L.marker(waypoint.latLng).bindPopup("Destination Hospital");
       }
       return null;
     }
-    
   }).addTo(map);
 
-  // Hide default direction panel
   document.querySelector('.leaflet-routing-container').style.display = 'none';
 
-  // Show immediate instruction on route selected
-  routingControl.on('routesfound', function (e) {
+  routingControl.on('routesfound', e => {
     const instructions = e.routes[0].instructions;
-    if (instructions.length > 0) {
-      const firstInstruction = instructions[0].text;
-      showDirection(firstInstruction);
-    }
+    if (instructions.length > 0) showDirection(instructions[0].text);
   });
 
-  routingControl.on('routeselected', function (e) {
+  routingControl.on('routeselected', e => {
     const instructions = e.route.instructions;
-    if (instructions.length > 0) {
-      const firstInstruction = instructions[0].text;
-      showDirection(firstInstruction);
-    }
+    if (instructions.length > 0) showDirection(instructions[0].text);
   });
-
-  document.getElementById("start-btn").style.display = "block";
-
-  document.getElementById("start-btn").onclick = function () {
-    if (!isRoutingStarted) {
-      document.querySelector('.leaflet-routing-container').style.display = 'none';
-      isRoutingStarted = true;
-
-      if (userLat && userLon) {
-        map.setView([userLat, userLon], 18);
-      }
-
-      map.dragging.disable();
-      map.touchZoom.disable();
-      map.doubleClickZoom.disable();
-      map.scrollWheelZoom.disable();
-      map.boxZoom.disable();
-      map.keyboard.disable();
-      if (map.tap) map.tap.disable();
-      map.getContainer().style.cursor = "not-allowed";
-
-      this.innerHTML = "Stop";
-      this.style.backgroundColor = "red";
-      document.getElementById("find-me-btn").style.display = "none";
-
-      watchId = navigator.geolocation.watchPosition((pos) => {
-        if (!isRoutingStarted) return;
-
-        userLat = pos.coords.latitude;
-        userLon = pos.coords.longitude;
-
-        const latlng = L.latLng(userLat, userLon);
-        if (userMarker) userMarker.setLatLng(latlng);
-        map.setView(latlng);
-
-        routingControl.spliceWaypoints(0, 1, latlng);
-      });
-
-      // Show direction box after starting route
-      document.getElementById("direction-box").style.display = "block";
-
-    } else {
-      isRoutingStarted = false;
-      document.querySelector('.leaflet-routing-container').style.display = 'none';
-
-      map.dragging.enable();
-      map.touchZoom.enable();
-      map.doubleClickZoom.enable();
-      map.scrollWheelZoom.enable();
-      map.boxZoom.enable();
-      map.keyboard.enable();
-      if (map.tap) map.tap.enable();
-      map.getContainer().style.cursor = "grab";
-
-      if (watchId !== null) {
-        navigator.geolocation.clearWatch(watchId);
-        watchId = null;
-      }
-
-      this.innerHTML = "Start";
-      this.style.backgroundColor = "";
-      document.getElementById("find-me-btn").style.display = "block";
-
-      const waypoints = routingControl.getWaypoints();
-      const latlngs = [waypoints[0].latLng, waypoints[1].latLng];
-      map.fitBounds(L.latLngBounds(latlngs));
-
-      // Hide direction box when stop is clicked
-      document.getElementById("direction-box").style.display = "none";
-    }
-  };
+  changeDestinationBtn.style.display = "block";
+  startBtn.style.display = "block";
+  startBtn.onclick = toggleRoute;
 }
 
-document.getElementById("find-me-btn").onclick = () => {
+// Toggle route tracking on/off
+function toggleRoute() {
+  if (!isRoutingStarted) {
+    isRoutingStarted = true;
+    map.setView([userLat, userLon], 18);
+    map.dragging.disable();
+    map.touchZoom.disable();
+    map.doubleClickZoom.disable();
+    map.scrollWheelZoom.disable();
+    map.boxZoom.disable();
+    map.keyboard.disable();
+    if (map.tap) map.tap.disable();
+    map.getContainer().style.cursor = "not-allowed";
+
+    startBtn.innerHTML = "Stop";
+    startBtn.style.backgroundColor = "rgb(197, 27, 15)";
+    findMeBtn.style.display = "none";
+    changeDestinationBtn.style.display = "none";
+    directionBox.style.display = "block";
+
+    watchId = navigator.geolocation.watchPosition((pos) => {
+      if (!isRoutingStarted) return;
+
+      userLat = pos.coords.latitude;
+      userLon = pos.coords.longitude;
+      const latlng = L.latLng(userLat, userLon);
+
+      if (userMarker) userMarker.setLatLng(latlng);
+      map.setView(latlng);
+      routingControl.spliceWaypoints(0, 1, latlng);
+    });
+
+  } else {
+    isRoutingStarted = false;
+    directionBox.style.display = "none";
+    map.dragging.enable();
+    map.touchZoom.enable();
+    map.doubleClickZoom.enable();
+    map.scrollWheelZoom.enable();
+    map.boxZoom.enable();
+    map.keyboard.enable();
+    if (map.tap) map.tap.enable();
+    map.getContainer().style.cursor = "grab";
+
+    if (watchId !== null) {
+      navigator.geolocation.clearWatch(watchId);
+      watchId = null;
+    }
+
+    startBtn.innerHTML = "Start";
+    startBtn.style.backgroundColor = "";
+    findMeBtn.style.display = "block";
+    changeDestinationBtn.style.display = "block";
+
+    const waypoints = routingControl.getWaypoints();
+    map.fitBounds(L.latLngBounds([waypoints[0].latLng, waypoints[1].latLng]));
+  }
+}
+
+// Show direction text in UI
+function showDirection(instruction) {
+  directionBox.innerText = instruction;
+  if (isRoutingStarted) directionBox.style.display = 'block';
+}
+
+// Center map to user location
+findMeBtn.onclick = () => {
   if (userLat && userLon) {
     map.setView([userLat, userLon], 18);
   }
 };
 
+document.getElementById("change-destination-btn").onclick = () => {
+    showCustomPopup();
+};
+
+
+// DOM ready actions
 document.addEventListener('DOMContentLoaded', () => {
   initLocationFetch();
   hideLoadingScreen();
 });
-
-function showDirection(instruction) {
-  const box = document.getElementById("direction-box");
-  box.innerText = instruction;
-  if (isRoutingStarted) box.style.display = 'block';
-}
