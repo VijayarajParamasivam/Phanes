@@ -226,7 +226,7 @@ function routeToHospital(index) {
 function toggleRoute() {
   if (!isRoutingStarted) {
     isRoutingStarted = true;
-    map.setView([userLat, userLon], 16);
+    map.setView([userLat, userLon], 18);
     map.dragging.disable();
     map.touchZoom.disable();
     map.doubleClickZoom.disable();
