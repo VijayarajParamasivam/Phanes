@@ -4,6 +4,8 @@ Phanes is a smart web app that helps ambulance drivers find the **nearest hospit
 
 Built to support **emergency response optimization**, Phanes reduces decision time and improves navigation with intuitive UI and powerful mapping features.
 
+🔗 **Live Demo:** [Check it out here](https://phanes-ers.netlify.app)
+
 ---
 
 ## Features
@@ -36,7 +38,7 @@ Built to support **emergency response optimization**, Phanes reduces decision ti
 
 ---
 
-##  Screenshots
+##  User Interface
 
 <div align="center">
   <img src="screenshots/nearbyhospitals.jpg" alt="Nearby Hospitals" width="30%" style="margin-right:10px;"/>
