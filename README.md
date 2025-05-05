@@ -37,8 +37,9 @@ Built to support **emergency response optimization**, Phanes reduces decision ti
 ---
 
 ##  Screenshots
+![Home](screenshots/home.jpg)
+![Nearby Hospitals](screenshots/nearbyhospitals.jpg)
+![Routing](screenshots/routing.jpg)
 
 ```md
-![Home Screen](screenshots/home.png)
-![Hospital List](screenshots/hospitals.png)
-![Traffic Box](screenshots/traffic.png)
+
