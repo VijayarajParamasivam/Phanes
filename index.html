@@ -9,10 +9,21 @@
   <link rel="stylesheet" href="style.css"/>
 </head>
 <body>
+  <div id="loading-screen">
+    <img src="./assets/phanesLogo.png" alt="Logo" id="loading-logo">
+  </div>
+  <!-- Retry Location Popup -->
+<div id="retry-location-popup" class="popup">
+  <p>Location services are not enabled. Please enable your location and retry.</p>
+  <button onclick="retryLocation()">Retry</button>
+</div>
+
+  <!-- Your existing map and other content goes here -->
+  
   <div id="map"></div>
   <div id="modal"></div>
+  <div id="direction-box" style="display:none;"></div>
 
-  <!-- Rotate to North Button -->
   <div id="find-me-btn-container">
   <button id="find-me-btn">Find me</button>
   </div>
@@ -21,7 +32,7 @@
 
   <!-- Start Button -->
   <div id="start-btn-container">
-    <button id="start-btn" class="start-btn" style="display: none;">Start Routing</button>
+    <button id="start-btn" class="start-btn" style="display: none;">Start</button>
   </div>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
