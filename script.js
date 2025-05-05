@@ -16,23 +16,23 @@ const modal = document.getElementById("modal");
 const directionBox = document.getElementById("direction-box");
 const startBtn = document.getElementById("start-btn");
 const changeDestinationBtn = document.getElementById("change-destination-btn");
+const trafficBox = document.getElementById("trafficBox");
+const trafficLevelSpan = document.getElementById("trafficLevel");
+const etaSpan = document.getElementById("eta");
 
 // Initial UI setup
 loadingScreen.style.display = "flex";
 findMeBtn.style.display = "none";
 
-// Show location fetch error popup
 function showLocationError() {
   retryPopup.style.display = "block";
 }
 
-// Retry location fetch
 function retryLocation() {
   retryPopup.style.display = "none";
   initLocationFetch();
 }
 
-// Start location fetch
 function initLocationFetch() {
   navigator.geolocation.getCurrentPosition(
     position => {
@@ -50,7 +50,6 @@ function initLocationFetch() {
   );
 }
 
-// Ensure loading screen is visible for at least 2 seconds
 function hideLoadingScreen() {
   setTimeout(function check() {
     if (locationFetched) {
@@ -61,7 +60,6 @@ function hideLoadingScreen() {
   }, 0);
 }
 
-// Initialize Leaflet map
 function initMap(lat, lon) {
   map = L.map('map', {
     zoomControl: false,
@@ -70,8 +68,15 @@ function initMap(lat, lon) {
 
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
-    attribution: ''
+    attribution: '',
+    pane: 'tilePane' 
   }).addTo(map);
+
+  var tilePane = map.getPane('tilePane');
+  if (tilePane) {
+    tilePane.style.filter = 'brightness(0.7) invert(0.9) grayscale(0.6) contrast(1.1)' ;
+
+  }
 
   const userIcon = L.icon({
     iconUrl: './assets/redlocator.png',
@@ -86,7 +91,6 @@ function initMap(lat, lon) {
   findMeBtn.style.display = "block";
 }
 
-// Fetch nearby hospitals using Overpass API
 function fetchNearbyHospitals(lat, lon) {
   const url = `https://overpass-api.de/api/interpreter?data=[out:json];(node["amenity"="hospital"](around:2000,${lat},${lon});way["amenity"="hospital"](around:2000,${lat},${lon});relation["amenity"="hospital"](around:2000,${lat},${lon}););out center;`;
 
@@ -103,7 +107,7 @@ function fetchNearbyHospitals(lat, lon) {
         if (hLat && hLon) {
           const name = el.tags?.name || `Hospital ${idx + 1}`;
           const distance = getDistance(userLat, userLon, hLat, hLon);
-          const eta = (distance / 40 * 60).toFixed(0); // 40 km/h
+          const eta = (distance / 40 * 60).toFixed(0);
 
           hospitalList.push({ name, lat: hLat, lon: hLon, distance, eta });
 
@@ -123,7 +127,6 @@ function fetchNearbyHospitals(lat, lon) {
     });
 }
 
-// Calculate haversine distance in km
 function getDistance(lat1, lon1, lat2, lon2) {
   const R = 6371;
   const dLat = (lat2 - lat1) * Math.PI / 180;
@@ -135,14 +138,12 @@ function getDistance(lat1, lon1, lat2, lon2) {
   return (R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))).toFixed(2);
 }
 
-// Disable user interactions on map
 function disableUserMarkerCreation() {
   map.on('click', () => false);
   if (map.tap) map.tap.disable();
   map.getContainer().style.cursor = "not-allowed";
 }
 
-// Show hospital options in modal
 function showCustomPopup() {
   modal.innerHTML = `<h3>Select a Hospital</h3>`;
 
@@ -172,13 +173,42 @@ function showCustomPopup() {
   modal.style.display = "block";
 }
 
-// Start routing
+async function fetchTrafficData(lat, lon) {
+  try {
+    const res = await fetch(`https://api.tomtom.com/traffic/services/4/flowSegmentData/absolute/10/json?point=${lat},${lon}&unit=KMPH&key=ppuQPLJUxLOvsAWiGvDnYCw8n0xdJHBd`);
+    const data = await res.json();
+    const seg = data.flowSegmentData;
+
+    const ratio = seg.currentSpeed / seg.freeFlowSpeed;
+    const trafficLevel = ratio > 0.8 ? "Low" : ratio > 0.5 ? "Medium" : "High";
+    const eta = Math.round(seg.currentTravelTime / 60);
+
+
+    trafficLevelSpan.textContent = `${trafficLevel}`;
+    trafficLevelSpan.className = "traffic-status"; 
+    if (trafficLevel === "Low") trafficLevelSpan.classList.add("traffic-low");
+    else if (trafficLevel === "Medium") trafficLevelSpan.classList.add("traffic-medium");
+    else if (trafficLevel === "High") trafficLevelSpan.classList.add("traffic-high");
+
+    etaSpan.textContent = `${eta}`;
+
+    trafficBox.style.display = "block";
+
+  } catch (err) {
+    console.error("Failed to fetch traffic data:", err);
+    trafficBox.style.display = "none";
+  }
+}
+
+
 function routeToHospital(index) {
   const hosp = hospitalList[index];
 
   if (routingControl) map.removeControl(routingControl);
   hospitalMarkers.forEach(marker => map.removeLayer(marker));
   hospitalMarkers = [];
+
+  fetchTrafficData(hosp.lat, hosp.lon);
 
   routingControl = L.Routing.control({
     waypoints: [
@@ -222,10 +252,10 @@ function routeToHospital(index) {
   startBtn.onclick = toggleRoute;
 }
 
-// Toggle route tracking on/off
 function toggleRoute() {
   if (!isRoutingStarted) {
     isRoutingStarted = true;
+    trafficBox.style.display = "none";
     map.setView([userLat, userLon], 18);
     map.dragging.disable();
     map.touchZoom.disable();
@@ -256,6 +286,7 @@ function toggleRoute() {
 
   } else {
     isRoutingStarted = false;
+    trafficBox.style.display = "block";
     directionBox.style.display = "none";
     map.dragging.enable();
     map.touchZoom.enable();
@@ -281,13 +312,11 @@ function toggleRoute() {
   }
 }
 
-// Show direction text in UI
 function showDirection(instruction) {
   directionBox.innerText = instruction;
   if (isRoutingStarted) directionBox.style.display = 'block';
 }
 
-// Center map to user location
 findMeBtn.onclick = () => {
   if (userLat && userLon) {
     map.setView([userLat, userLon], 18);
@@ -298,7 +327,6 @@ document.getElementById("change-destination-btn").onclick = () => {
   showCustomPopup();
 };
 
-// DOM ready actions
 document.addEventListener('DOMContentLoaded', () => {
   initLocationFetch();
   hideLoadingScreen();
