@@ -1,183 +1,210 @@
 * {
-    box-sizing: border-box;
-    font-family: "Segoe UI", Roboto, sans-serif;
-  }
+  box-sizing: border-box;
+  font-family: "Segoe UI", Roboto, sans-serif;
+}
 
-  html, body {
-    height: 100%;
-    margin: 0;
-    padding: 0;
-    overflow: hidden;
-  }
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background-color: #121212; 
+  color: #e0e0e0;
+}
 
-  #map {
-    height: 100vh;
-    width: 100%;
-  }
+#map {
+  height: 100vh;
+  width: 100%;
+  background-color: #212121;
+}
 
-  #modal {
-    position: absolute;
-    top: 10%;
-    left: 50%;
-    transform: translateX(-50%);
-    background-color: #fff;
-    border-radius: 12px;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
-    padding: 20px 25px;
-    width: 90%;
-    max-width: 400px;
-    max-height: 65vh;
-    overflow-y: auto;
-    z-index: 1000;
-    display: none;
-    animation: fadeIn 0.3s ease-in-out;
-  }
+#modal {
+  position: absolute;
+  top: 10%;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(33, 33, 33, 0.85); /* Translucent dark background */
+  border-radius: 16px;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.7);
+  padding: 24px;
+  width: 90%;
+  max-width: 420px;
+  max-height: 70vh;
+  overflow-y: auto;
+  z-index: 1000;
+  display: none;
+  animation: fadeIn 0.3s ease-in-out;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  backdrop-filter: blur(8px); /* Subtle blur for the background */
+}
 
-  #modal h3 {
-    margin-top: 0;
-    margin-bottom: 15px;
-    font-size: 22px;
-    color: #333;
-    text-align: center;
-  }
-  .hospital-btn.top-option {
-    background-color: #e53935; 
-    color: white;
-    border: none;
-    font-weight: bold;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-  }
-  
-  .hospital-btn.top-option:hover {
-    background-color: #c62828;
-  }
-  
-  .hospital-btn {
-    background:   #0571e4;
-    color: white;
-    border: none;
-    border-radius: 10px;
-    padding: 14px 16px;
-    margin-bottom: 12px;
-    width: 100%;
-    font-size: 15px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-  }
+#modal::-webkit-scrollbar {
+  display: none;
+}
 
-  .hospital-btn:hover {
-    background:   #0463c9;
-    transform: translateY(-2px);
-    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.15);
-  }
+#modal h3 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  font-size: 24px;
+  color: #f5f5f5;
+  text-align: center;
+  font-weight: 600;
+}
 
-  @keyframes fadeIn {
-    from {
-      opacity: 0;
-      transform: translateX(-50%) translateY(-10px);
-    }
-    to {
-      opacity: 1;
-      transform: translateX(-50%) translateY(0);
-    }
-  }
+.hospital-btn.top-option {
+  background-color: rgba(230, 74, 25, 0.9);
+  color: #fff;
+  border: none;
+  font-weight: 500;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+  border-radius: 12px;
+  padding: 16px;
+  font-size: 16px;
+  backdrop-filter: blur(5px);
+}
 
-  #find-me-btn {
-    position: absolute;
-    bottom: 20px;
-    right: 20px;
-    z-index: 1000;
-    background-color: white;
-    border: none;
-    padding: 10px 15px;
-    border-radius: 8px;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-    cursor: pointer;
-    font-weight: bold;
-    display: none; 
-  }
-  
-  #start-btn-container {
-    position: absolute;
-    bottom: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 1000;
-  }
-  
-  .start-btn {
-    background-color: #4CAF50;
-    color: white;
-    border: none;
-    padding: 12px 24px;
-    font-size: 16px;
-    border-radius: 8px;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-    cursor: pointer;
-    font-weight: bold;
-    display: none; /* Initially hidden */
-  }
-  
-  .start-btn:hover {
-    background-color: #45a049;
-  }
+.hospital-btn.top-option:hover {
+  background-color: rgba(216, 67, 21, 1);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.5);
+}
 
-  #direction-box {
+.hospital-btn {
+  background: rgba(21, 136, 236, 0.9);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+  width: 100%;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: transform 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(5px);
+}
+
+.hospital-btn:hover {
+  background: rgba(25, 118, 210, 1);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-15px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+#find-me-btn {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  z-index: 1000;
+  background-color: #424242;
+  color: #fff;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+  cursor: pointer;
+  font-weight: bold;
+  display: none;
+}
+
+#find-me-btn:hover {
+  color: #bbdefb;
+}
+
+#find-me-btn:active {
+  color: #64b5f6;
+}
+
+#start-btn-container {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+}
+
+.start-btn {
+  background-color: #41af47;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  font-size: 16px;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+  cursor: pointer;
+  font-weight: bold;
+  display: none;
+}
+
+.start-btn:hover {
+  background-color: #389d3d;
+}
+
+#direction-box {
   position: absolute;
   top: 15px;
   left: 50%;
   transform: translateX(-50%);
-  background-color: white;
+  background-color: #303030;
+  color: #e0e0e0;
   padding: 10px 20px;
   border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
   font-weight: bold;
   z-index: 1000;
   max-width: 90%;
   text-align: center;
 }
 
-/* Full screen loading page */
 #loading-screen {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(199,0,57,255); 
+  background-color: rgba(199, 0, 57, 255);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 1000;
   flex-direction: column;
   text-align: center;
-  display: none; /* Initially hidden */
+  display: none;
 }
 
-/* Logo styling */
 #loading-logo {
-  max-width: 650px; /* Adjust as per your logo size */
+  max-width: 650px;
   margin-bottom: 20px;
 }
 
-/* Popup style */
 .popup {
   display: none;
   position: fixed;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  background-color: white;
+  background-color: #303030;
+  color: #e0e0e0;
   padding: 20px;
-  border: 2px solid #333;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+  border: 2px solid #5e5e5e;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.7);
   text-align: center;
   z-index: 2000;
 }
 
 .popup button {
-  background-color: red;
+  background-color: #b71c1c;
   color: white;
   padding: 10px 20px;
   border: none;
@@ -190,13 +217,64 @@
   top: 20px;
   right: 20px;
   z-index: 1000;
-  background-color: white;
+  background-color: #424242;
+  color: #fff;
   border: none;
   padding: 10px 15px;
   border-radius: 8px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
   cursor: pointer;
   font-weight: bold;
-  display: none; 
+  display: none;
 }
 
+#change-destination-btn:hover {
+  color: #bbdefb;
+}
+
+#change-destination-btn:active {
+  color: #64b5f6;
+}
+
+#trafficBox {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  background: rgba(33, 33, 33, 0.85);
+  color: #e0e0e0;
+  padding: 8px 14px;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+  z-index: 999;
+  font-size: 14px;
+  max-width: 240px;
+  line-height: 1.4;
+  display: none;
+  backdrop-filter: blur(6px);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+#trafficBox .traffic-status {
+  display: block;
+  font-size: 15px;
+  font-weight: bold;
+  margin-bottom: 4px;
+}
+
+#trafficBox .eta {
+  display: inline;
+  margin-left: 4px;
+  font-weight: normal;
+}
+
+.traffic-low {
+  color: #00ff88;
+}
+
+.traffic-medium {
+  color: #ffcc00;
+}
+
+.traffic-high {
+  color: #ff4c4c;
+}
