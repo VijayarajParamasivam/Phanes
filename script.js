@@ -216,6 +216,7 @@ function routeToHospital(index) {
     const instructions = e.route.instructions;
     if (instructions.length > 0) showDirection(instructions[0].text);
   });
+
   changeDestinationBtn.style.display = "block";
   startBtn.style.display = "block";
   startBtn.onclick = toggleRoute;
@@ -294,9 +295,8 @@ findMeBtn.onclick = () => {
 };
 
 document.getElementById("change-destination-btn").onclick = () => {
-    showCustomPopup();
+  showCustomPopup();
 };
-
 
 // DOM ready actions
 document.addEventListener('DOMContentLoaded', () => {
