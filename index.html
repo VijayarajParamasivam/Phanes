@@ -7,28 +7,32 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
   <link rel="stylesheet" href="style.css"/>
+  <link rel="icon" href="./assets/favicon.ico" type="image/x-icon">
 </head>
 <body>
   <div id="loading-screen">
     <img src="./assets/phanesLogo.png" alt="Logo" id="loading-logo">
   </div>
-  <!-- Retry Location Popup -->
+
 <div id="retry-location-popup" class="popup">
   <p>Location services are not enabled. Please enable your location and retry.</p>
   <button onclick="retryLocation()">Retry</button>
 </div>
-
-  <!-- Your existing map and other content goes here -->
   
   <div id="map"></div>
   <div id="modal"></div>
   <div id="direction-box" style="display:none;"></div>
   <button id="change-destination-btn">Change Destination</button>
+
+  <div id="trafficBox" style="display:none;" class="traffic-box">
+    <p><strong>Traffic :</strong> <span id="trafficLevel">-</span></p>
+    <p><strong>Time :</strong><br> <span id="eta">-</span> mins</p>
+  </div>
+
   <div id="find-me-btn-container">
   <button id="find-me-btn">Find me</button>
   </div>
 
-  <!-- Start Button -->
   <div id="start-btn-container">
     <button id="start-btn" class="start-btn" style="display: none;">Start</button>
   </div>
