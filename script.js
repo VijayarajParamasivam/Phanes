@@ -54,7 +54,7 @@ function hideLoadingScreen() {
     } else {
       hideLoadingScreen(); // Keep showing loading screen until location is fetched
     }
-  }, 2000);
+  },0);
 }
 
 // Start location fetch immediately after loading
@@ -82,6 +82,7 @@ function initMap(lat, lon) {
 
   fetchNearbyHospitals(lat, lon);
   hideLoadingScreen();
+  disableUserMarkerCreation();
   document.getElementById("find-me-btn").style.display = "block";
 }
 
@@ -166,6 +167,17 @@ function showCustomPopup() {
   modal.style.display = "block";
 }
 
+// Disable user from adding markers or interacting with map
+function disableUserMarkerCreation() {
+  // Disable map click event that normally adds markers
+  map.on('click', function (e) {
+    return false; // Prevent marker creation on click
+  });
+
+  if (map.tap) map.tap.disable();
+  map.getContainer().style.cursor = "not-allowed";
+}
+
 function routeToHospital(index) {
   const hosp = hospitalList[index];
 
@@ -186,9 +198,22 @@ function routeToHospital(index) {
       styles: [{ color: 'blue', weight: 6 }]
     },
     createMarker: function (i, waypoint, n) {
-      if (i === 0) return null;
-      return L.marker(waypoint.latLng);
+      if (i === 0) {
+        // Source marker (ambulance)
+        return L.marker(waypoint.latLng, {
+          icon: L.icon({
+            iconUrl: './assets/redlocator.png', 
+            iconSize: [32, 32],
+            iconAnchor: [16, 32]
+          })
+        }).bindPopup("Ambulance Location");
+      } else if (i === n - 1) {
+        // Destination marker (hospital) – default icon
+        return L.marker(waypoint.latLng).bindPopup("Destination Hospital");
+      }
+      return null;
     }
+    
   }).addTo(map);
 
   // Hide default direction panel
